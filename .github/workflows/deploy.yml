@@ -1,0 +1,48 @@
+name: Deploy pagina estatica en pages
+
+on:
+    #cuando se hace push
+    push:
+        #rama main
+        branches: ["main"]
+    #ejecutar manualmente desde la ventana de github actions
+    workflow_dispatch:
+
+permissions:
+    #permisos necesarios para que github actions escriba en el despliegue en consola
+    contents: read
+    pages: write
+    id-token: write
+
+concurrency:
+    group: "pages"
+    cancel-in-progress: true
+
+jobs:
+    deploy:
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+        runs-on: ubuntu-latest
+        steps:
+
+            #paso 1 revision de codigo y lectura
+            - name : Checkout
+              uses: actions/checkout@v6
+
+            #paso 2 llamamos a git hub pages
+            - name: Setup Pages
+              uses: actions/configure-pages@v5
+
+            #paso 3 carga de archivos a github pages
+            - name : Carga artifact
+              uses: actions/upload-pages-artifact@v4
+
+              with:
+                # carpeta deon esta la web (index.html)
+                path: "."
+                  
+            # desplegar los archivos con github pages
+            - name: Desplegar en GitHub Pages
+              id: deployment
+              uses: actions/deploy-pages@v4
